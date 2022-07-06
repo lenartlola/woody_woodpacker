@@ -1,0 +1,73 @@
+cmake_minimum_required(VERSION 3.22)
+project(woody_woodpacker C)
+
+set(CMAKE_C_STANDARD 11)
+
+include_directories(incs)
+include_directories(libs/libft/incs)
+include_directories(libs/libft/incs/libft)
+
+add_executable(woody_woodpacker
+        incs/wpacker.h
+        libs/libft/incs/libft/ft_chars.h
+        libs/libft/incs/libft/ft_fds.h
+        libs/libft/incs/libft/ft_lst.h
+        libs/libft/incs/libft/ft_mems.h
+        libs/libft/incs/libft/ft_nbrs.h
+        libs/libft/incs/libft/ft_printf.h
+        libs/libft/incs/libft/ft_strs.h
+        libs/libft/incs/libft.h
+        libs/libft/srcs/ft_chars/ft_isalnum.c
+        libs/libft/srcs/ft_chars/ft_isalpha.c
+        libs/libft/srcs/ft_chars/ft_isascii.c
+        libs/libft/srcs/ft_chars/ft_isdigit.c
+        libs/libft/srcs/ft_chars/ft_isprint.c
+        libs/libft/srcs/ft_chars/ft_isspace.c
+        libs/libft/srcs/ft_chars/ft_putchar.c
+        libs/libft/srcs/ft_chars/ft_tolower.c
+        libs/libft/srcs/ft_chars/ft_toupper.c
+        libs/libft/srcs/ft_fds/ft_putchar_fd.c
+        libs/libft/srcs/ft_fds/ft_putendl_fd.c
+        libs/libft/srcs/ft_fds/ft_putnbr_fd.c
+        libs/libft/srcs/ft_fds/ft_putstr_fd.c
+        libs/libft/srcs/ft_fds/get_next_line.c
+        libs/libft/srcs/ft_lst/ft_lstadd_back.c
+        libs/libft/srcs/ft_lst/ft_lstadd_front.c
+        libs/libft/srcs/ft_lst/ft_lstclear.c
+        libs/libft/srcs/ft_lst/ft_lstdelone.c
+        libs/libft/srcs/ft_lst/ft_lstiter.c
+        libs/libft/srcs/ft_lst/ft_lstlast.c
+        libs/libft/srcs/ft_lst/ft_lstmap.c
+        libs/libft/srcs/ft_lst/ft_lstnew.c
+        libs/libft/srcs/ft_lst/ft_lstsize.c
+        libs/libft/srcs/ft_mems/ft_bzero.c
+        libs/libft/srcs/ft_mems/ft_calloc.c
+        libs/libft/srcs/ft_mems/ft_memchr.c
+        libs/libft/srcs/ft_mems/ft_memcmp.c
+        libs/libft/srcs/ft_mems/ft_memcpy.c
+        libs/libft/srcs/ft_mems/ft_memmove.c
+        libs/libft/srcs/ft_mems/ft_memset.c
+        libs/libft/srcs/ft_nbrs/ft_atof.c
+        libs/libft/srcs/ft_nbrs/ft_atoi.c
+        libs/libft/srcs/ft_nbrs/ft_itoa.c
+        libs/libft/srcs/ft_printf/ft_print_c.c
+        libs/libft/srcs/ft_printf/ft_print_nbr.c
+        libs/libft/srcs/ft_printf/ft_print_str.c
+        libs/libft/srcs/ft_printf/ft_printf.c
+        libs/libft/srcs/ft_printf/utils.c
+        libs/libft/srcs/ft_strs/ft_putstr.c
+        libs/libft/srcs/ft_strs/ft_split.c
+        libs/libft/srcs/ft_strs/ft_strchr.c
+        libs/libft/srcs/ft_strs/ft_strdup.c
+        libs/libft/srcs/ft_strs/ft_striteri.c
+        libs/libft/srcs/ft_strs/ft_strjoin.c
+        libs/libft/srcs/ft_strs/ft_strlcat.c
+        libs/libft/srcs/ft_strs/ft_strlcpy.c
+        libs/libft/srcs/ft_strs/ft_strlen.c
+        libs/libft/srcs/ft_strs/ft_strmapi.c
+        libs/libft/srcs/ft_strs/ft_strncmp.c
+        libs/libft/srcs/ft_strs/ft_strnstr.c
+        libs/libft/srcs/ft_strs/ft_strrchr.c
+        libs/libft/srcs/ft_strs/ft_strtrim.c
+        libs/libft/srcs/ft_strs/ft_substr.c
+        srcs/main.c)

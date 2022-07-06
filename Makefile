@@ -36,7 +36,7 @@ CFLAGS += -Wall -Wextra -Werror
 #CFLAGS += -O2 -march=native
 #CFLAGS += -g3
 
-all:
+all: simple
 	@$(MAKE) -j$(NPROC) $(NAME)
 
 $(NAME): $(LIB) $(OBJS)
@@ -52,6 +52,13 @@ $(LIB):
 	@$(MAKE) -C libs/libft
 	@echo Libft done
 
+simple:
+	@$(CC) ./srcs/prog.cc -o simple
+
+docker:
+	docker build -t arch .
+	docker run -it arch
+
 clean:
 	@rm -rf $(BUILD_DIR)
 	@$(MAKE) -C libs/libft clean
@@ -62,6 +69,9 @@ fclean:
 	@rm -f $(NAME)
 	@$(MAKE) -C libs/libft fclean
 	@echo Fclean done
+
+prune:
+	docker system prune -a --volumes
 
 re: fclean
 	@$(MAKE) -j$(NPROC) $(NAME)
