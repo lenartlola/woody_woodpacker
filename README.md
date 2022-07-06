@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-  <img width="80%" src="https://github.com/0xdeadabed/woody_woodpacker/blob/main/docs/assets/woody-woodpecker.png">
+  <img width="80%" src="https://github.com/0xdeadabed/woody_woodpacker/blob/main/docs/assets/woody-woodpecker1.png">
 </p>
 
 > “Packers” are tools whose task consists of compressing executable programs (.exe, .dll,
