@@ -1,4 +1,10 @@
-# woody_woodpacker
+<p align="center">
+  <b> woody_woodpacker </b>
+</p>
+
+<p align="center">
+  <img width="80%" src="https://github.com/0xdeadabed/woody_woodpacker/docs/assets/woody-woodpecker.png">
+</p>
 
 > “Packers” are tools whose task consists of compressing executable programs (.exe, .dll,
 > .ocx ...) and encrypting them simultaneously. During execution, a program passing
@@ -30,7 +36,7 @@ Its execution has to be totally identical to the original program in the last st
 	* libft and all the functions within it
 * The executable should be named woody_woodpacker.
 * An optimised encryption algorithm should be chosen.
-* When running the encrypted program, it will have to display the string “....WOODY....”, followed by a newline, to indicate that the binary is encrypted. Its execution after decryption must not be altered.
+* When running the encrypted program, it will have to display the string “....WOODY....”, followed by a newline.
 * Obviously, in no way the encrypted program is allowed to crash.
 * The program must not change the execution of the final binary produced.
 
