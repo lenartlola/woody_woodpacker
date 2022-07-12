@@ -43,5 +43,6 @@ int main(int argc, char **argv) {
     
     
     write(STDOUT_FILENO, "\n", 1);
+	free(buffer);
     return (0);
 }
