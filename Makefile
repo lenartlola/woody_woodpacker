@@ -64,7 +64,7 @@ clean:
 	@$(MAKE) -C libs/libft clean
 	@echo Clean done
 
-fclean: prune
+fclean:
 	@rm -rf $(BUILD_DIR)
 	@rm -f $(NAME)
 	@$(MAKE) -C libs/libft fclean

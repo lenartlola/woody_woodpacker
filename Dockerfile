@@ -6,6 +6,6 @@ RUN sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/inst
 
 RUN curl -sLf https://spacevim.org/install.sh | bash
 
-COPY . src
+COPY . woody_woodpacker
 
 ENTRYPOINT [ "zsh" ]
