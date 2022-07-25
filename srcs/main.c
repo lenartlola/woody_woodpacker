@@ -8,13 +8,19 @@ void	print_usage()
 
 int main(int argc, char **argv)
 {
-	FILE			*ptr;
-	unsigned char	buffer[1024];
+	int	ffd;
+	char	buffer[1024];
 
 	if (argc != 2)
 		print_usage();
-	ptr = fopen(argv[1], "rb");
-	fread(buffer, sizeof(buffer), 1, ptr);
-	for(int i = 0; i<10; i++)
-		printf("%x \n", buffer[i]); // prints a series of bytes
+	ffd = open(argv[1], O_RDONLY);
+	//lseek(ffd, 0x4, SEEK_SET);
+	read(ffd, buffer, 4);
+	buffer[4] = '\0';
+	int i = 0;
+	while(buffer[i])
+	{
+		printf("0x%x ", buffer[i]);
+		i++;
+	}
 }
