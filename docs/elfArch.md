@@ -769,3 +769,109 @@ init1
 init2
 Hello, Finit!
 ```
+
+### ELF header table
+
+An ELF program header table is an array of program headers that defines the
+memory layout of a program at runtime.
+
+> A program header is a description of a program segment.
+> A program segment is a collection of related sections. A segment contains zero or more sections.
+> An operating system when loading a program, only use segments, not sections. 
+> To see the information of a program header table, we use the -l option with readelf:
+
+```shell
+readelf -l a.out
+```
+
+A program header has various types:
+
+* **PHDR** specifies the location and size of the program header table itself,
+  both in the file and in the memory image of the program
+* **INTERP** specifies the location and size of a null-terminated path name
+  to invoke as an interpreter for linking runtime libraries.
+* **LOAD** specifies a loadable segment. That is, this segment is loaded into
+  main memory.
+* **DYNAMIC** specifies dynamic linking information.
+* **NOTE** specifies the location and size of auxiliary information.
+* **TLS** specifies the Thread-Local Storage template, which is formed from
+  the combination of all sections with the flag TLS.
+* **GNU_STACK** indicates whether the program’s stack should be made executable or not. Linux kernel uses this type.
+
+A segment also has permission:
+* Read (R)
+* Write (W)
+* Execute (E)
+
+Example:
+
+```c
+// hello.c
+// gcc -o hello hello.c
+
+#include <stdio.h>
+
+int main()
+{
+    printf("Hello, Header!\n");
+    
+    return 0;
+}
+```
+
+Output:
+```
+
+Elf file type is DYN (Position-Independent Executable file)
+Entry point 0x1040
+There are 13 program headers, starting at offset 64
+
+Program Headers:
+  Type           Offset             VirtAddr           PhysAddr
+                 FileSiz            MemSiz              Flags  Align
+  PHDR           0x0000000000000040 0x0000000000000040 0x0000000000000040
+                 0x00000000000002d8 0x00000000000002d8  R      0x8
+  INTERP         0x0000000000000318 0x0000000000000318 0x0000000000000318
+                 0x000000000000001c 0x000000000000001c  R      0x1
+      [Requesting program interpreter: /lib64/ld-linux-x86-64.so.2]
+  LOAD           0x0000000000000000 0x0000000000000000 0x0000000000000000
+                 0x0000000000000630 0x0000000000000630  R      0x1000
+  LOAD           0x0000000000001000 0x0000000000001000 0x0000000000001000
+                 0x0000000000000161 0x0000000000000161  R E    0x1000
+  LOAD           0x0000000000002000 0x0000000000002000 0x0000000000002000
+                 0x00000000000000b4 0x00000000000000b4  R      0x1000
+  LOAD           0x0000000000002de8 0x0000000000003de8 0x0000000000003de8
+                 0x0000000000000248 0x0000000000000250  RW     0x1000
+  DYNAMIC        0x0000000000002df8 0x0000000000003df8 0x0000000000003df8
+                 0x00000000000001e0 0x00000000000001e0  RW     0x8
+  NOTE           0x0000000000000338 0x0000000000000338 0x0000000000000338
+                 0x0000000000000040 0x0000000000000040  R      0x8
+  NOTE           0x0000000000000378 0x0000000000000378 0x0000000000000378
+                 0x0000000000000044 0x0000000000000044  R      0x4
+  GNU_PROPERTY   0x0000000000000338 0x0000000000000338 0x0000000000000338
+                 0x0000000000000040 0x0000000000000040  R      0x8
+  GNU_EH_FRAME   0x0000000000002014 0x0000000000002014 0x0000000000002014
+                 0x0000000000000024 0x0000000000000024  R      0x4
+  GNU_STACK      0x0000000000000000 0x0000000000000000 0x0000000000000000
+                 0x0000000000000000 0x0000000000000000  RW     0x10
+  GNU_RELRO      0x0000000000002de8 0x0000000000003de8 0x0000000000003de8
+                 0x0000000000000218 0x0000000000000218  R      0x1
+
+ Section to Segment mapping:
+  Segment Sections...
+   00     
+   01     .interp 
+   02     .interp .note.gnu.property .note.gnu.build-id .note.ABI-tag .gnu.hash .dynsym .dynstr .gnu.version .gnu.version_r .rela.dyn .rela.plt 
+   03     .init .plt .text .fini 
+   04     .rodata .eh_frame_hdr .eh_frame 
+   05     .init_array .fini_array .dynamic .got .got.plt .data .bss 
+   06     .dynamic 
+   07     .note.gnu.property 
+   08     .note.gnu.build-id .note.ABI-tag 
+   09     .note.gnu.property 
+   10     .eh_frame_hdr 
+   11     
+   12     .init_array .fini_array .dynamic .got
+```
+
+
