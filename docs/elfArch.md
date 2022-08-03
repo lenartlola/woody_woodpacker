@@ -426,7 +426,7 @@ value, or as an external variable using the extern keyword. In
 other words, these variables stay in .bss section.
 
 * `Bind` is the scope of a symbol.
-  * `LOCAL` are symbols that are only visible in the object files that
+  *`LOCAL` are symbols that are only visible in the object files that
     defined them. like static variable/function in C.
 Example:
 ```c
@@ -512,6 +512,260 @@ Note:
     13: 0000000000001139    22 FUNC    LOCAL  DEFAULT   14 static_print
     14: 0000000000004034     4 OBJECT  LOCAL  DEFAULT   25 static_var.0
 ```
+* Bind:
+  * `Global` are symbols that are accessible by other object files when
+    linking together.
 
-* `LOCAL` are symbols that are only visible in the object files that
- defined them. like static variable/function in C.
+Example:
+  Non-static functions.
+
+* Bind:
+  * `WEAK` are symbols whose definitions can be redefined.
+
+Example:
+```c
+// weak.c
+// gcc -o weak weak.c
+
+#include <stdio.h>
+
+__attribute__((weak)) int add (int a, int b)
+{
+    printf("This function does nothing\n");
+    
+    return 0;
+}
+
+int main()
+{
+    printf("(a + b) = %d\n", add(21, 21));
+    
+    return 0x0;
+}
+```
+
+Then:
+```shell
+gcc -o weak weak.c
+./weak
+```
+
+Output:
+```
+This function does nothing
+(a + b) = 0
+```
+
+The `__atribute__` is a function attribute that tells the compiler that the function definition could be changed later on.
+
+Example: if we implement `add(a + b)`, in another file, addition.c for example.
+
+```c
+// addition.c
+// gcc -o weak weak.c addition.c
+
+int add(int a, int b)
+{
+    return a + b;
+}
+```
+
+Then:
+```shell
+gcc -o weak weak.c addition.c
+```
+
+Output:
+```
+(a + b) = 42
+```
+
+
+* `Vis` is the visibility of a symbol, which has different values.
+
+| Value     | Description                                                                                                                                                                                                                                                                   |
+|-----------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| DEFAULT   | The visibility is specified by the binding type of asymbol. Global and weak symbols are visible outside of their defining component (executable file or shared object). Local symbols are hidden.                                                                             |
+| HIDDEN    | A symbol is hidden when the name is not visible to any other program outside of its running program.                                                                                                                                                                          |
+| PROTECTED | A symbol is protected when it is shared outside of its running program or shared libary and cannot be overridden. That is, there can only be one definition for this symbol across running programs that use it. No program can define its own definition of the same symbol. |
+| INTERNAL  | Visibility is processor-specific and is defined by processor-specific ABI.                                                                                                                                                                                                    |
+
+
+* `Ndx` is the index of a section that the symbol is in. Aside from fixed
+  index numbers that represent section indexes, index has these special values:
+
+| Value                      | Description                                                                                                                                                                                                                                                                                             |
+|----------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| ABS                        | The index will not be changed by any symbol relocation.                                                                                                                                                                                                                                                 |
+| UND                        | The symbol is undefined in the current object file, which means the symbol depends on the actual definition in another file. Undefined symbols appears when the object file refers to symbols that are available at runtime, from shared library.                                                       |
+| LORESERVE <br /> HIRESERVE | LORESERVE is the lower boundary of the reserve indexes. Its value is 0xff00. <br /> HIREVERSE is the upper boundary of the reserve indexes. Its value is 0xffff. <br /> The operating system reserves exclusive indexes between LORESERVE and HIRESERVE, which do not map to any actual section header. |
+| XINDEX                     | The index is larger than LORESERVE. The actual value will be contained in the section SYMTAB_SHNDX, where each entry is a mapping between a symbol, whose Ndx field is a  XINDEX value, and the actual index value.                                                                                     |
+| Others                     | Sometimes, values such as ANSI_COM, LARGE_COM, SCOM, SUND appear. This means that the index is processor-specific.                                                                                                                                                                                      |
+
+
+A C application program always starts from symbol main. The entry for main in the symbol table in .symtab section is:
+
+```
+   Num:    Value          Size Type    Bind   Vis      Ndx Name
+    34: 000000000000114f    21 FUNC    GLOBAL DEFAULT   14 main
+```
+
+The main:
+- is the 62th entry in the table.
+- starts at address 0x0000000000400526.
+- consumes 32 bytes.
+- is a function.
+- is in global scope.
+- is visible to other object files that use it.
+- is inside the 14th section, which is .text. This is logical, since  .text holds all program code
+
+An interesting section is `INIT_ARRAY` which is an array of function pointers for program initialization.
+When an application program runs, before getting to main(), initialization code in .init and this section are executed first
+The first element in this array is an ignored function pointer.
+
+Example:
+```c
+// init.c
+// gcc -o init init.c
+
+#include <stdio.h>
+
+__attribute__((constructor)) static void init()
+{
+    printf("1. %s\n", __FUNCTION__);
+}
+
+__attribute__((constructor)) static void init1()
+{
+printf("2. %s\n", __FUNCTION__);
+}
+
+int main()
+{
+    printf("Hello, Init!\n");
+    
+    return 0x0;
+}
+```
+
+Output:
+```
+1. init
+2. init1
+Hello, Init!
+```
+
+If we wanted to change the orders:
+Example:
+```c
+// init2.c
+// gcc -o init2 init2.c
+
+#include <stdio.h>
+
+__attribute__((constructor(102))) static void init()
+{
+    printf("1. %s\n", __FUNCTION__);
+}
+
+__attribute__((constructor(101))) static void init1()
+{
+    printf("2. %s\n", __FUNCTION__);
+}
+
+int main()
+{
+    printf("Hello, Init!\n");
+    
+    return 0x0;
+}
+```
+
+Output:
+```
+2. init1
+1. init
+Hello, Init!
+```
+
+> Note, that the constructor priorities from 0 to 100 are reserved for the implementation
+
+The `FINI_ARRAY` is an array of function pointers for program termination,
+called after exiting main(). iff the application terminate abnormally,
+such as through abort() call or a crash, the .finit_array is ignored.
+
+Example:
+```c
+// finit.c
+// gcc -o finit finit.c
+
+#include <stdio.h>
+
+__attribute__((destructor)) static void destructor()
+{
+    printf("%s\n", __FUNCTION__);
+}
+
+int main()
+{
+    printf("Hello, Finit!\n");
+    return 0;
+}
+```
+
+Output:
+```
+hello world
+destructor
+```
+
+The `PREINIT_ARRAY` is an array of function pointers that are invoked before
+all other initialization functions in `INIT_ARRAY`.
+
+Example:
+```c
+// preinit.c
+// gcc -o preinit preinit.c
+
+#include <stdio.h>
+
+void preinit1()
+{
+    printf("%s\n", __FUNCTION__);
+}
+void preinit2()
+{
+    printf("%s\n", __FUNCTION__);
+}
+void init1()
+{
+    printf("%s\n", __FUNCTION__);
+}
+void init2()
+{
+    printf("%s\n", __FUNCTION__);
+}
+
+typedef void (*preinit)();
+typedef void (*init)();
+
+__attribute__((section(".preinit_array"))) preinit preinit_arr[2] = {preinit1, preinit2};
+
+__attribute__((section(".preinit_array"))) init init_arr[2] = {init1, init2};
+
+int main()
+{
+    printf("Hello, Finit!\n");
+
+    return 0;
+}
+```
+
+Output:
+```
+preinit1
+preinit2
+init1
+init2
+Hello, Finit!
+```
