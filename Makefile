@@ -34,7 +34,7 @@ LIB    := libs/libft/libft.a
 
 CFLAGS += -Wall -Wextra -Werror
 #CFLAGS += -O2 -march=native
-#CFLAGS += -g3
+CFLAGS += -g3 -fsanitize=address
 
 all: simple
 	@$(MAKE) -j$(NPROC) $(NAME)
