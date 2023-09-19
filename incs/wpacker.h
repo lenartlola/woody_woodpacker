@@ -11,13 +11,15 @@
 #include "libft.h"
 
 typedef struct s_elf {
+	Elf64_Ehdr*	ehdr;
+	Elf64_Phdr*	phdr;
+	Elf64_Shdr*	shdr;
 	char*		mmap_ptr;
-	//Elf64_Ehdr*	ehdr;
 	size_t		len;
 }	t_elf;
 
 
-int init_struct(char *file, t_elf *ctx);
+t_elf* init_struct(char *file);
 int pack_elf(char *file);
 
 #endif

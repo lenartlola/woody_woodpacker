@@ -12,20 +12,20 @@ int pack_elf64(t_elf* ctx)
 
 int pack_elf(char *file)
 {
-	t_elf	ctx;
+	t_elf	*ctx;
 
-	if (init_struct(file, &ctx))
-		return 1;	
+	ctx = init_struct(file);
+	if (ctx == NULL)
+		return 1;
 
-	if (ctx.mmap_ptr[EI_CLASS] == ELFCLASS64)
-	{
-		pack_elf64(&ctx);
-	}
-
-	if (munmap(ctx.mmap_ptr, ctx.len) == -1)
+	if (munmap(ctx->mmap_ptr, ctx->len) == -1)
 	{
 		ft_printf(2, "Error happened while unmaping memory: %s", strerror(errno));
+		free(ctx);
+		ctx = NULL;
 		return 1;
 	}
+	free(ctx);
+	ctx = NULL;
 	return 0;
 }
