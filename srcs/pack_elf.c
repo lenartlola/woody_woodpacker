@@ -17,6 +17,35 @@ int pack_elf64(t_elf* ctx)
 	return 0;
 }
 
+int	extract_segment(t_elf* ctx, uint64_t* new_entry, uint64_t* text_segment_end, uint64_t* gap)
+{
+	Elf64_Phdr*	prog_hdr = (Elf64_Phdr *)((unsigned char *)ctx->ehdr + ctx->ehdr->e_phoff);
+
+	ft_printf(0, "CALL\n", new_entry);
+	// Iterate over every entry
+	for (int i = 0; i < ctx->ehdr->e_phnum; ++i, prog_hdr = (Elf64_Phdr*)((unsigned char *)prog_hdr + ctx->ehdr->e_phentsize)) {
+		// A file specifies its own program header size with the ELF header's e_phentsize and e_phnum members
+		ft_printf(0, "%d\n", prog_hdr->p_type);
+		if (prog_hdr->p_type == PT_LOAD)
+		{
+			// Make the segment writable
+			prog_hdr->p_flags |= PF_W;
+			if (prog_hdr->p_flags == (PF_W | PF_X | PF_R))
+			{
+				*new_entry = prog_hdr->p_vaddr + prog_hdr->p_filesz;
+				*text_segment_end = prog_hdr->p_filesz;
+				ft_printf(0, "new entry: %p\n", new_entry);
+			}
+			else if (prog_hdr->p_flags == (PF_R | PF_W))
+			{
+				*gap = prog_hdr->p_offset - *text_segment_end;
+				ft_printf(0, "gap : %d\n", *gap);
+			}
+		}
+	}	
+	return 0;
+}
+
 static int inject_payload(t_elf* ctx)
 {
 	/*
@@ -26,9 +55,17 @@ static int inject_payload(t_elf* ctx)
 	 * gives the virtual address to which the system first transfers control, 
 	 * thus starting the process.
 	 */
-	Elf64_Addr orig_entry = ctx->ehdr->e_entry;
-	uint64_t payload_size = sizeof(shellcode);
-	ft_printf(0, "entry point: %lx, %ld\n", orig_entry, payload_size);
+//	Elf64_Addr	orig_entry = ctx->ehdr->e_entry;	
+	uint64_t	new_entry = 0;
+	uint64_t	text_segment_end = 0;
+	uint64_t	gap = 0;
+//	uint64_t	text_section_end = 0;
+//	uint64_t	text_section_size = 0;
+//	uint64_t	text_section_init = 0;
+//	long		shellcode_size = sizeof(shellcode);
+//	short		is_static;
+	
+	extract_segment(ctx, &new_entry, &text_segment_end, &gap);
 
 	return 0;
 }

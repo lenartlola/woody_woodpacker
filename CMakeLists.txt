@@ -70,4 +70,8 @@ add_executable(woody_woodpacker
         libs/libft/srcs/ft_strs/ft_strrchr.c
         libs/libft/srcs/ft_strs/ft_strtrim.c
         libs/libft/srcs/ft_strs/ft_substr.c
-        srcs/main.c)
+        srcs/main.c
+        srcs/init.c
+        srcs/inject_payload.c
+        srcs/pack_elf.c
+        )
