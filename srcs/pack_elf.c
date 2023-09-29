@@ -17,33 +17,57 @@ int pack_elf64(t_elf* ctx)
 	return 0;
 }
 
-int	extract_segment(t_elf* ctx, uint64_t* new_entry, uint64_t* text_segment_end, uint64_t* gap)
+void	extract_segment(t_elf* ctx, uint64_t* new_entry, uint64_t* text_segment_end, uint64_t* gap)
 {
     int	i;
 
     i = 0;
 	// Iterate over every entry
 	while (i < ctx->ehdr->e_phnum) {
-		// A file specifies its own program header size with the ELF header's e_phentsize and e_phnum members
-		ft_printf(0, "%d\n", ctx->phdr[i].p_type);
+		// PT_LOAD segments are loaded to memory, so we need to inject the new entry_point there.
 		if (ctx->phdr[i].p_type == PT_LOAD)
 		{
 			// Make the segment writable
             ctx->phdr[i].p_flags |= PF_W;
 			if (ctx->phdr[i].p_flags == (PF_W | PF_X | PF_R))
 			{
+				// virtual address + filessz gives the new address where the code will be injected
 				*new_entry = ctx->phdr[i].p_vaddr + ctx->phdr[i].p_filesz;
 				*text_segment_end = ctx->phdr[i].p_filesz;
-				ft_printf(0, "new entry: %p\n", new_entry);
 			}
 			else if (ctx->phdr[i].p_flags == (PF_R | PF_W))
 			{
 				*gap = ctx->phdr[i].p_offset - *text_segment_end;
-				ft_printf(0, "gap : %d\n", *gap);
 			}
 		}
         i++;
-	}	
+	}
+}
+
+int	parse_text_section(t_elf* ctx, uint64_t* text_section_init,
+						   uint64_t* text_section_end, uint64_t* text_section_size)
+{
+	int i;
+	char *section_mem;
+
+	i = 0;
+	if (ctx->ehdr->e_shnum == 0 || ctx->ehdr->e_shstrndx == 0)
+	{
+		return 1;
+	}
+	section_mem = (char *)ctx->ehdr + ctx->shdr[ctx->ehdr->e_shstrndx].sh_offset;
+	while (i < ctx->ehdr->e_shnum)
+	{
+		if (strncmp(&section_mem[ctx->shdr[i].sh_name], ".text", ft_strlen(".text")) == 0)
+		{
+			*text_section_init = ctx->shdr[i].sh_offset;
+			*text_section_size = ctx->shdr[i].sh_size;
+			*text_section_end = *text_section_init + *text_section_size;
+			return 0;
+		}
+		i++;
+	}
+
 	return 0;
 }
 
@@ -56,17 +80,26 @@ static int inject_payload(t_elf* ctx)
 	 * gives the virtual address to which the system first transfers control, 
 	 * thus starting the process.
 	 */
-//	Elf64_Addr	orig_entry = ctx->ehdr->e_entry;	
-	uint64_t	new_entry = 0;
+	Elf64_Addr	orig_entry = ctx->ehdr->e_entry;
+	Elf64_Xword	new_entry = 0;
 	uint64_t	text_segment_end = 0;
+	uint64_t	text_section_end = 0;
+	uint64_t	text_section_size = 0;
+	uint64_t	text_section_init = 0;
 	uint64_t	gap = 0;
-//	uint64_t	text_section_end = 0;
-//	uint64_t	text_section_size = 0;
-//	uint64_t	text_section_init = 0;
 //	long		shellcode_size = sizeof(shellcode);
 //	short		is_static;
-	
+
+	ft_printf(0, "[+] original entry point: %p\n", &orig_entry);
 	extract_segment(ctx, &new_entry, &text_segment_end, &gap);
+	ft_printf(0, "[+] found entry point: %p\n", &new_entry);
+	ft_printf(0, "[+] available gap space: %d\n", gap);
+
+	if (parse_text_section(ctx, &text_section_init, &text_section_end, &text_section_size))
+	{
+		ft_printf(0, "[-] failed to parse text section\n");
+		return 1;
+	}
 
 	return 0;
 }

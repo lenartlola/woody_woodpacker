@@ -35,7 +35,7 @@ t_elf* init_struct(char *file)
 		ft_printf(2, "Error: invalid ELF file\n");
 		close(fd);
 
-		if (munmap(_data, (size_t)s) == -1)
+		if (munmap(_data, s) == -1)
 			ft_printf(2, "Error happened while unmaping memory, REASON: %s", strerror(errno));
 		return NULL;
 	}
@@ -45,7 +45,7 @@ t_elf* init_struct(char *file)
 	ctx->ehdr = (Elf64_Ehdr *)_data;
 	ctx->phdr = (Elf64_Phdr *)((char *)_data + ctx->ehdr->e_phoff);
 	ctx->shdr = (Elf64_Shdr *)((char *)_data + ctx->ehdr->e_shoff);
-	ctx->len = (size_t)s;
+	ctx->len = s;
 	close(fd);
 	return ctx;
 }
