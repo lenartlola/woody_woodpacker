@@ -5,7 +5,7 @@ t_elf* init_struct(char *file)
 	t_elf	*ctx;
 	char*	_data;
 	int		fd;
-	size_t	s;
+	off_t	s;
 
 	fd = open(file, O_RDONLY);
 	if (fd < 0)
@@ -43,8 +43,8 @@ t_elf* init_struct(char *file)
 	ctx = (t_elf *) malloc(sizeof(t_elf));
 	ctx->mmap_ptr = _data;
 	ctx->ehdr = (Elf64_Ehdr *)_data;
-	ctx->phdr = (Elf64_Phdr *)_data;
-	ctx->shdr = (Elf64_Shdr *)_data;
+	ctx->phdr = (Elf64_Phdr *)((char *)_data + ctx->ehdr->e_phoff);
+	ctx->shdr = (Elf64_Shdr *)((char *)_data + ctx->ehdr->e_shoff);
 	ctx->len = (size_t)s;
 	close(fd);
 	return ctx;

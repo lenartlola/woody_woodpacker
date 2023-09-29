@@ -19,29 +19,30 @@ int pack_elf64(t_elf* ctx)
 
 int	extract_segment(t_elf* ctx, uint64_t* new_entry, uint64_t* text_segment_end, uint64_t* gap)
 {
-	Elf64_Phdr*	prog_hdr = (Elf64_Phdr *)((unsigned char *)ctx->ehdr + ctx->ehdr->e_phoff);
+    int	i;
 
-	ft_printf(0, "CALL\n", new_entry);
+    i = 0;
 	// Iterate over every entry
-	for (int i = 0; i < ctx->ehdr->e_phnum; ++i, prog_hdr = (Elf64_Phdr*)((unsigned char *)prog_hdr + ctx->ehdr->e_phentsize)) {
+	while (i < ctx->ehdr->e_phnum) {
 		// A file specifies its own program header size with the ELF header's e_phentsize and e_phnum members
-		ft_printf(0, "%d\n", prog_hdr->p_type);
-		if (prog_hdr->p_type == PT_LOAD)
+		ft_printf(0, "%d\n", ctx->phdr[i].p_type);
+		if (ctx->phdr[i].p_type == PT_LOAD)
 		{
 			// Make the segment writable
-			prog_hdr->p_flags |= PF_W;
-			if (prog_hdr->p_flags == (PF_W | PF_X | PF_R))
+            ctx->phdr[i].p_flags |= PF_W;
+			if (ctx->phdr[i].p_flags == (PF_W | PF_X | PF_R))
 			{
-				*new_entry = prog_hdr->p_vaddr + prog_hdr->p_filesz;
-				*text_segment_end = prog_hdr->p_filesz;
+				*new_entry = ctx->phdr[i].p_vaddr + ctx->phdr[i].p_filesz;
+				*text_segment_end = ctx->phdr[i].p_filesz;
 				ft_printf(0, "new entry: %p\n", new_entry);
 			}
-			else if (prog_hdr->p_flags == (PF_R | PF_W))
+			else if (ctx->phdr[i].p_flags == (PF_R | PF_W))
 			{
-				*gap = prog_hdr->p_offset - *text_segment_end;
+				*gap = ctx->phdr[i].p_offset - *text_segment_end;
 				ft_printf(0, "gap : %d\n", *gap);
 			}
 		}
+        i++;
 	}	
 	return 0;
 }
