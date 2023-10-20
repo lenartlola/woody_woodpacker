@@ -10,6 +10,8 @@
 
 #include "libft.h"
 
+# define KEY_SIZE	8
+
 extern unsigned char	patch[];
 extern unsigned int		patch_len;
 
@@ -22,11 +24,11 @@ typedef struct s_elf {
 }	t_elf;
 
 typedef struct s_patch {
-	unsigned int o_entry;
-	unsigned int code;
-	unsigned int code_size;
-	unsigned int key;
-	unsigned int new_entry;
+	uint64_t o_entry;
+	uint64_t code;
+	uint64_t code_size;
+	uint64_t key;
+	uint64_t new_entry;
 } t_patch;
 
 int init_struct(char *file, t_elf *ctx);

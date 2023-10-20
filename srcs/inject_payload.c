@@ -1,6 +1,6 @@
 #include <wpacker.h>
 
-static unsigned int
+static uint64_t
 get_random(size_t size) {
 	int fd;
 	long long rnd;
@@ -11,14 +11,10 @@ get_random(size_t size) {
 		ft_printf(2, "[-] Error couldn't open fd\n");
 		return -1;
 	}
-	rnd = read(fd, &rnd, size);
-	//if (rnd < 0)
-	//{
-	//	ft_printf(2, "[-] Failed to read from /dev/urandom\n");
-	//	return -1;
-	//}
+	rnd = 0;
+	read(fd, &rnd, size);
 	close(fd);
-	return (uint64_t)rnd;
+	return ((uint64_t)rnd);
 }
 
 Elf64_Shdr*
@@ -52,10 +48,12 @@ get_code_segment(t_elf *ctx)
 }
 
 static void
-encrypt_elf(size_t size, void *data, unsigned int key)
+encrypt_elf(size_t size, void *data, uint64_t key)
 {
+//	uint64_t original_key;
 	uint64_t byte;
 
+//	original_key = key;
 	for (size_t i = 0; i < size; i++) {
 		*(unsigned char*)(data + i) = *(unsigned char *)(data + i) ^ (key & 0b11111111);
 		byte = key & 0b0000001;
@@ -79,7 +77,7 @@ set_new_entry(t_patch *patch_ctx, t_elf *ctx, Elf64_Phdr* code_segment)
 	ft_memmove(ptr + len, patch_ctx, sizeof(t_patch));
 }
 
-static int
+static ssize_t
 write_elf(t_elf *ctx)
 {
 	int fd;
@@ -92,7 +90,7 @@ write_elf(t_elf *ctx)
 		ft_printf(2, "[-] Failed to create woody file'n");
 		return -1;
 	}
-	ptr = ctx->mmap_ptr;
+//	ptr = ctx->mmap_ptr;
 	i = 0;
 	while (i < ctx->len) {
 		ptr = ctx->mmap_ptr + i;
@@ -129,7 +127,7 @@ inject_elf(t_elf *ctx)
 	}
 	patch_ehdr->e_entry = code_segment->p_vaddr + code_segment->p_memsz;
 	ft_memset(&patch_ctx, 0, sizeof(t_patch));
-	patch_ctx.key = get_random(8);
+	patch_ctx.key = get_random(KEY_SIZE);
 	patch_ctx.o_entry = ctx->ehdr->e_entry;
 	patch_ctx.code = text_section->sh_addr;
 	patch_ctx.code_size = text_section->sh_size;
