@@ -1,8 +1,34 @@
 #include <wpacker.h>
 
-t_elf* init_struct(char *file)
+static int
+elf_sanitizer(char *data)
 {
-	t_elf	*ctx;
+	if (data[0] != 0x7f || data[1] != 'E' || data[2] != 'L' || data[3] != 'F') {
+		ft_printf(2, "[-] Elf magic header doesn't match: 0x%x%c%c%c\n", data[0], data[1], data[2], data[3]);
+		return 1;
+	}
+	if (data[4] != 1 && data[4] != 2) {
+		ft_printf(2, "[-] Invalid architecture 0x%x\n", data[4]);
+		return 1;
+	}
+	if (data[16] != ET_EXEC && data[16] != ET_DYN) {
+		ft_printf(2, "[-] Invalid type of ELF. Must be either executable or shared\n");
+		return 1;
+	}
+	return 0;
+}
+
+static void
+get_x64_86_segments(char *data, t_elf *ctx)
+{
+	ctx->ehdr = (Elf64_Ehdr *)data;
+	ctx->phdr = (Elf64_Phdr *)((char *)data + ctx->ehdr->e_phoff);
+	ctx->shdr = (Elf64_Shdr *)((char *)data + ctx->ehdr->e_shoff);
+}
+
+int
+init_struct(char *file, t_elf *ctx)
+{
 	char*	_data;
 	int		fd;
 	off_t	s;
@@ -11,7 +37,7 @@ t_elf* init_struct(char *file)
 	if (fd < 0)
 	{
 		ft_printf(2, "Failed t open file %s, REASON: %s\n", file, strerror(errno));
-		return NULL;
+		return 1;
 	}
 	
 	s = lseek(fd, 0, SEEK_END);
@@ -19,7 +45,7 @@ t_elf* init_struct(char *file)
 	{
 		ft_printf(2, "Error happened in lseek, REASON: %s\n", strerror(errno));
 		close(fd);
-		return NULL;
+		return 1;
 	}
 	
     _data = mmap(NULL, s, PROT_READ | PROT_WRITE, MAP_PRIVATE, fd, 0);
@@ -27,25 +53,28 @@ t_elf* init_struct(char *file)
 	{
 		ft_printf(2, "Error happened while mapping memory, REASON: %s\n", strerror(errno));
 		close(fd);
-		return NULL;
+		return 1;
 	}
 
-	if (_data[EI_CLASS] != ELFCLASS64)
+	if (elf_sanitizer(_data) != 0)
 	{
-		ft_printf(2, "Error: invalid ELF file\n");
+		ft_printf(2, "[-] Error: invalid ELF file\n");
 		close(fd);
 
 		if (munmap(_data, s) == -1)
-			ft_printf(2, "Error happened while unmaping memory, REASON: %s", strerror(errno));
-		return NULL;
+			ft_printf(2, "[-] Error happened while unmaping memory, REASON: %s", strerror(errno));
+		return 1;	
 	}
-
-	ctx = (t_elf *) malloc(sizeof(t_elf));
+	
 	ctx->mmap_ptr = _data;
-	ctx->ehdr = (Elf64_Ehdr *)_data;
-	ctx->phdr = (Elf64_Phdr *)((char *)_data + ctx->ehdr->e_phoff);
-	ctx->shdr = (Elf64_Shdr *)((char *)_data + ctx->ehdr->e_shoff);
+	if (_data[4] == 2) {
+		get_x64_86_segments(_data, ctx);
+	}
+	else if (_data[4] == 1) {
+		ft_printf(2, "[!] TODO 32 bit arch\n");
+		return 1;
+	}
 	ctx->len = s;
 	close(fd);
-	return ctx;
+	return 0;
 }
