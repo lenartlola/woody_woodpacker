@@ -4,6 +4,7 @@ int pack_elf(char *file)
 {
 	t_elf	ctx;
 
+	ft_memset(&ctx, 0, sizeof(t_elf));
 	if (init_struct(file, &ctx) != 0)
 		return 1;
 	inject_elf(&ctx);

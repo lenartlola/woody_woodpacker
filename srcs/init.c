@@ -18,12 +18,44 @@ elf_sanitizer(char *data)
 	return 0;
 }
 
+Elf64_Shdr*
+get_text_section(t_elf *ctx) {
+	char *section_names;
+
+	section_names = (char *)ctx->mmap_ptr + ctx->shdr[ctx->ehdr->e_shstrndx].sh_offset;
+	for (int i = 0; i < ctx->ehdr->e_shnum; i++) {
+		if ((!ft_strncmp(".text", section_names + ctx->shdr[i].sh_name, 6))
+			&& (ctx->shdr[i].sh_type == SHT_PROGBITS)
+			&& (ctx->shdr[i].sh_flags & SHF_EXECINSTR))
+		{
+			return &ctx->shdr[i];
+		}
+	}
+	return NULL;
+}
+
+Elf64_Phdr*
+get_code_segment(t_elf *ctx)
+{
+	for (int i = 0; i < ctx->ehdr->e_phnum; i++) {
+		if ((ctx->phdr[i].p_type == PT_LOAD)
+			&& (ctx->phdr[i].p_vaddr <= ctx->ehdr->e_entry)
+			&& (ctx->phdr[i].p_vaddr + ctx->phdr[i].p_memsz > ctx->ehdr->e_entry))
+		{
+			return &ctx->phdr[i];
+		}
+	}
+	return NULL;
+}
+
 static void
 get_x64_86_segments(char *data, t_elf *ctx)
 {
 	ctx->ehdr = (Elf64_Ehdr *)data;
 	ctx->phdr = (Elf64_Phdr *)((char *)data + ctx->ehdr->e_phoff);
 	ctx->shdr = (Elf64_Shdr *)((char *)data + ctx->ehdr->e_shoff);
+	ctx->code_segment = get_code_segment(ctx);
+	ctx->text_section = get_text_section(ctx);
 }
 
 int
@@ -31,7 +63,7 @@ init_struct(char *file, t_elf *ctx)
 {
 	char*	_data;
 	int		fd;
-	off_t	s;
+//	off_t	s;
 
 	fd = open(file, O_RDONLY);
 	if (fd < 0)
@@ -40,15 +72,15 @@ init_struct(char *file, t_elf *ctx)
 		return 1;
 	}
 	
-	s = lseek(fd, 0, SEEK_END);
-	if (s == -1) 
+	ctx->len = lseek(fd, (size_t)0, SEEK_END);
+	if (ctx->len == -1)
 	{
 		ft_printf(2, "Error happened in lseek, REASON: %s\n", strerror(errno));
 		close(fd);
 		return 1;
 	}
 	
-    _data = mmap(NULL, s, PROT_READ | PROT_WRITE, MAP_PRIVATE, fd, 0);
+    _data = mmap(NULL, ctx->len, PROT_READ | PROT_WRITE, MAP_PRIVATE, fd, (size_t)0);
 	if (_data == MAP_FAILED)
 	{
 		ft_printf(2, "Error happened while mapping memory, REASON: %s\n", strerror(errno));
@@ -61,7 +93,7 @@ init_struct(char *file, t_elf *ctx)
 		ft_printf(2, "[-] Error: invalid ELF file\n");
 		close(fd);
 
-		if (munmap(_data, s) == -1)
+		if (munmap(_data, ctx->len) == -1)
 			ft_printf(2, "[-] Error happened while unmaping memory, REASON: %s", strerror(errno));
 		return 1;	
 	}
@@ -74,7 +106,7 @@ init_struct(char *file, t_elf *ctx)
 		ft_printf(2, "[!] TODO 32 bit arch\n");
 		return 1;
 	}
-	ctx->len = s;
+//	ctx->len = s;
 	close(fd);
 	return 0;
 }

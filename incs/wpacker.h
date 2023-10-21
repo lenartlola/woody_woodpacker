@@ -18,9 +18,11 @@ extern unsigned int		patch_len;
 typedef struct s_elf {
 	Elf64_Ehdr*	ehdr;
 	Elf64_Phdr*	phdr;
+	Elf64_Phdr*	code_segment;
 	Elf64_Shdr*	shdr;
+	Elf64_Shdr*	text_section;
 	char*		mmap_ptr;
-	size_t		len;
+	ssize_t		len;
 }	t_elf;
 
 typedef struct s_patch {
