@@ -31,7 +31,7 @@ encrypt_elf(size_t size, void *data, uint64_t key)
 }
 
 static void
-set_new_entry(t_patch *patch_ctx, t_elf *ctx)
+set_new_entry(t_patch64 *patch_ctx, t_elf64 *ctx)
 {
 	void *ptr;
 	ssize_t len;
@@ -40,13 +40,13 @@ set_new_entry(t_patch *patch_ctx, t_elf *ctx)
 	ctx->code_segment->p_memsz += patch_len;
 	ctx->code_segment->p_filesz += patch_len;
 	ctx->code_segment->p_flags = ctx->code_segment->p_flags | PF_W;
-	len = patch_len - sizeof(t_patch);
+	len = patch_len - sizeof(t_patch64);
 	ft_memmove(ptr, patch, len);
-	ft_memmove(ptr + len, patch_ctx, sizeof(t_patch));
+	ft_memmove(ptr + len, patch_ctx, sizeof(t_patch64));
 }
 
 static ssize_t
-write_elf(t_elf *ctx)
+write_elf(t_elf64 *ctx)
 {
 	int fd;
 	void* ptr;
@@ -72,15 +72,15 @@ write_elf(t_elf *ctx)
 }    
 
 int
-inject_elf(t_elf *ctx)
+inject_elf(t_elf64 *ctx)
 {
-	t_patch patch_ctx;
+	t_patch64 patch_ctx;
 	Elf64_Ehdr* patch_ehdr;
 
 	patch_ehdr = (Elf64_Ehdr *)ctx->mmap_ptr;
 
-	ft_memset(&patch_ctx, 0, sizeof(t_patch));
-	patch_ctx.key = get_random(KEY_SIZE);
+	ft_memset(&patch_ctx, 0, sizeof(t_patch64));
+	patch_ctx.key = get_random(8);
 	patch_ctx.o_entry = ctx->ehdr->e_entry;
 	patch_ctx.code = ctx->text_section->sh_addr;
 	patch_ctx.code_size = ctx->text_section->sh_size;

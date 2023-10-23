@@ -74,4 +74,5 @@ add_executable(woody_woodpacker
         srcs/init.c
         srcs/inject_payload.c
         srcs/pack_elf.c
+        srcs/payload.c
         )
