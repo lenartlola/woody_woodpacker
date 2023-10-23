@@ -1,12 +1,12 @@
 section .text
 bits 64
-
+default rel
 global _start
 
-; lenart
-; nasm -f bin write.asm -o bin
-; Get the formated shellcode as following
-; hexdump -v -e '"\\\x\" 1/1 "%02x"' bin
+;;; lenart
+;;; nasm -f bin write.asm -o bin
+;;; Get the formated shellcode as following
+;;; hexdump -v -e '"\\\x\" 1/1 "%02x"' bin
 
 
 _start:
@@ -17,20 +17,16 @@ _start:
 	mov eax, 1		; the write systemcall according to linux syscalls table
 	syscall			; trigger the syscall
 
-	mov eax, 60		; we want to exit in order to avoid the segmentation fault
-	syscall
-
 	;; We want to encrypt the text section and then call the original entry
 	lea rax, [o_entry]
 	add rax, qword [o_entry]
 	sub rax, qword [new_entry]
 	sub rax, o_entry
 	push rax
-
 	lea rdi, [code]
 	add rdi, qword [code]
 	sub rdi, qword [new_entry]
-	sub rdi, new_entry
+	sub rdi, code
 	mov rcx, qword [code_size]
 	mov rax, qword [key]
 
@@ -44,8 +40,11 @@ decrypt:
 	
 	
 message db "....WOODY....",10 ; 10 is used for newline
-o_entry resd 1		      ; resq 1 for 32-bit
-code resd 1
-code_size resd 1
-key resd 1
-new_entry resd 1
+
+;;; These variables are here just to allocate memory,
+;;; they will be replaced with those in the t_patch struct.
+o_entry dq 0
+code dq 0
+code_size dq 0
+key dq 0
+new_entry dq 0
