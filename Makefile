@@ -41,6 +41,9 @@ CFLAGS += -g3 -fsanitize=address
 all: simple
 	@$(MAKE) -j$(NPROC) $(NAME)
 
+bonus: clean
+	@$(MAKE) -j$(NPROC) $(NAME) -e CFLAGS="-D BONUS=1"
+
 $(NAME): $(LIB) $(OBJS)
 	@echo Linking $@
 	@$(CC) $(CFLAGS) $(INC_FLAGS) $(OBJS) $(LIBS) -o $(NAME)

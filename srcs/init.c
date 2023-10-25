@@ -1,7 +1,7 @@
 #include <wpacker.h>
 
-Elf64_Shdr*
-get_x64_86_text_section(t_elf64 *ctx) {
+SHDR*
+get_x64_86_text_section(t_elf *ctx) {
 	char *section_names;
 
 	section_names = (char *)ctx->mmap_ptr + ctx->shdr[ctx->ehdr->e_shstrndx].sh_offset;
@@ -16,8 +16,8 @@ get_x64_86_text_section(t_elf64 *ctx) {
 	return NULL;
 }
 
-Elf64_Phdr*
-get_x64_86_code_segment(t_elf64 *ctx)
+PHDR*
+get_x64_86_code_segment(t_elf *ctx)
 {
 	for (int i = 0; i < ctx->ehdr->e_phnum; i++) {
 		if ((ctx->phdr[i].p_type == PT_LOAD)
