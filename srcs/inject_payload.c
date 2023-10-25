@@ -13,6 +13,7 @@ get_random(size_t size) {
 	}
 	rnd = 0;
 	read(fd, &rnd, size);
+	ft_printf(1, "Key: %lld\n", rnd);
 	close(fd);
 	return ((uint64_t)rnd);
 }
