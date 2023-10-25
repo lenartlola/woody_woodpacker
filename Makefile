@@ -1,5 +1,7 @@
 SHELL = /bin/sh
 
+C_D = $(shell pwd)
+
 CFLAGS := ${CFLAGS}
 
 CC     ?= gcc
@@ -57,7 +59,7 @@ simple:
 
 docker:
 	docker build -t arch .
-	docker run -it arch
+	docker run -it --name archwoody -v $(C_D):/woody arch
 
 clean:
 	@rm -rf $(BUILD_DIR)
