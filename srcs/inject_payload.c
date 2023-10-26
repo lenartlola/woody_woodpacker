@@ -1,6 +1,6 @@
 #include <wpacker.h>
 
-static uint64_t
+static UINT
 get_random(size_t size) {
 	int fd;
 	long long rnd;
@@ -13,26 +13,33 @@ get_random(size_t size) {
 	}
 	rnd = 0;
 	read(fd, &rnd, size);
-	ft_printf(1, "Key: %lld\n", rnd);
+	ft_printf(1, "Key: 0x%#lX\n", rnd);
 	close(fd);
-	return ((uint64_t)rnd);
+	return ((UINT)rnd);
 }
 
 static void
-encrypt_elf(size_t size, void *data, uint64_t key)
+encrypt_elf(size_t size, void *data, UINT key)
 {
-	uint64_t byte;
+	UINT byte;
+	int shft;
 
+	#ifdef BONUS
+		shft = 31;
+	#else
+		shft = 63;
+	#endif
+	printf("%d\n", shft);
 	for (size_t i = 0; i < size; ++i) {
 		*(unsigned char*)(data + i) = *(unsigned char *)(data + i) ^ (key & 0b11111111);
 		byte = key & 0b0000001;
-		byte <<= 63;
+		byte <<= shft;
 		key = (key >> 1) | byte;
 	}
 }
 
 static void
-set_new_entry(t_patch64 *patch_ctx, t_elf64 *ctx)
+set_new_entry(t_patch *patch_ctx, t_elf *ctx)
 {
 	void *ptr;
 	ssize_t len;
@@ -41,13 +48,13 @@ set_new_entry(t_patch64 *patch_ctx, t_elf64 *ctx)
 	ctx->code_segment->p_memsz += patch_len;
 	ctx->code_segment->p_filesz += patch_len;
 	ctx->code_segment->p_flags = ctx->code_segment->p_flags | PF_W;
-	len = patch_len - sizeof(t_patch64);
+	len = patch_len - sizeof(t_patch);
 	ft_memmove(ptr, patch, len);
-	ft_memmove(ptr + len, patch_ctx, sizeof(t_patch64));
+	ft_memmove(ptr + len, patch_ctx, sizeof(t_patch));
 }
 
 static ssize_t
-write_elf(t_elf64 *ctx)
+write_elf(t_elf *ctx)
 {
 	int fd;
 	void* ptr;
@@ -73,14 +80,14 @@ write_elf(t_elf64 *ctx)
 }    
 
 int
-inject_elf(t_elf64 *ctx)
+inject_elf(t_elf *ctx)
 {
-	t_patch64 patch_ctx;
-	Elf64_Ehdr* patch_ehdr;
+	t_patch patch_ctx;
+	EHDR* patch_ehdr;
 
-	patch_ehdr = (Elf64_Ehdr *)ctx->mmap_ptr;
+	patch_ehdr = (EHDR *)ctx->mmap_ptr;
 
-	ft_memset(&patch_ctx, 0, sizeof(t_patch64));
+	ft_memset(&patch_ctx, 0, sizeof(t_patch));
 	patch_ctx.key = get_random(8);
 	patch_ctx.o_entry = ctx->ehdr->e_entry;
 	patch_ctx.code = ctx->text_section->sh_addr;
