@@ -29,7 +29,6 @@ encrypt_elf(size_t size, void *data, UINT key)
 	#else
 		shft = 63;
 	#endif
-	printf("%d\n", shft);
 	for (size_t i = 0; i < size; ++i) {
 		*(unsigned char*)(data + i) = *(unsigned char *)(data + i) ^ (key & 0b11111111);
 		byte = key & 0b0000001;

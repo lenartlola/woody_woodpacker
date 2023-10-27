@@ -9,6 +9,17 @@ int pack_elf(char *file)
 	len = init_struct(file, &data);
 	if (len < 0)
 		return 1;
+	# ifdef BONUS
+		if (data[4] != 1) {
+			ft_printf(2, "Only file accepted are 32bit in Bonus\n");
+			return 1;
+		}
+	# else 
+		if (data[4] != 2) {
+			ft_printf(2, "Only file accepted are 64bit when compilled without bonus\n");
+			return 1;
+		}
+	# endif
 	ft_memset(&ctx, 0, sizeof(t_elf));
 	ctx.mmap_ptr = data;
 	ctx.len = len;
